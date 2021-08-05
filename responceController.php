@@ -91,46 +91,46 @@
 			die($this->respond());
 		}
 		// get
-		function get($name,$type)
+		function getVal($name,$type)
 		{
 			return $this->val('get',$name,$type);
 		}
 		function getInt($name)
 		{
-			return $this->get($name,'int');
+			return $this->getVal($name,'int');
 		}
 		function getList($name)
 		{
-			return $this->get($name,'intlist');
+			return $this->getVal($name,'intlist');
 		}
 		function getString($name)
 		{
-			return $this->get($name,'string');
+			return $this->getVal($name,'string');
 		}
 		function getAddr($name)
 		{
-			return $this->get($name,'address');
+			return $this->getVal($name,'address');
 		}
 		// post
-		function post($name,$type)
+		function postVal($name,$type)
 		{
 			return $this->val('post',$name,$type);
 		}
 		function postInt($name)
 		{
-			return $this->post($name,'int');
+			return $this->postVal($name,'int');
 		}
 		function getList($name)
 		{
-			return $this->post($name,'intlist');
+			return $this->postVal($name,'intlist');
 		}
 		function postString($name)
 		{
-			return $this->post($name,'string');
+			return $this->postVal($name,'string');
 		}
 		function postAddr($name)
 		{
-			return $this->post($name,'address');
+			return $this->postVal($name,'address');
 		}
 		// value
 		function val($method,$name,$type)
