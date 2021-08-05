@@ -6,7 +6,7 @@
 	*	@author		dev1lroot@protonmail.com
 	*	@copyright	2021 David Eichendorf (C)
 	*	@license	AGPL 3.0
-	*	@version	4.2
+	*	@version	4.3
 	*/
 	class API
 	{
@@ -91,6 +91,10 @@
 			die($this->respond());
 		}
 		// get
+		function hasGet($key)
+		{
+			return array_key_exists($key,$this->get);
+		}
 		function getVal($name,$type)
 		{
 			return $this->val('get',$name,$type);
@@ -112,6 +116,10 @@
 			return $this->getVal($name,'address');
 		}
 		// post
+		function hasPost($key)
+		{
+			return array_key_exists($key,$this->post);
+		}
 		function postVal($name,$type)
 		{
 			return $this->val('post',$name,$type);
@@ -133,13 +141,21 @@
 			return $this->postVal($name,'address');
 		}
 		// value
+		function req($method,$name,$type)
+		{
+			return "для выполнения этого запроса необходимо передать: ".strtoupper($method).":".strtoupper($name)." типа: ".strtoupper($type);
+		}
+		function mismatch($method,$name,$type)
+		{
+			return strtoupper($method).":".strtoupper($name)." не соответствует требованиям типа: ".strtoupper($type);
+		}
 		function val($method,$name,$type)
 		{
 			if($method == "get")
 			{
-				if(!array_key_exists($name,$this->get))
+				if(!$this->hasGet($name))
 				{
-					$this->report("для выполнения этого запроса необходимо передать: ".strtoupper($method).":".strtoupper($name)." типа: ".strtoupper($type));
+					$this->report($this->req($method,$name,$type));
 					$this->terminate();
 				}
 				else
@@ -150,16 +166,16 @@
 					}
 					else
 					{
-						$this->report(strtoupper($method).":".strtoupper($name)." не соответствует требованиям типа: ".strtoupper($type));
+						$this->report($this->mismatch($method,$name,$type));
 						$this->terminate();
 					}
 				}
 			}
 			else
 			{
-				if(!array_key_exists($name,$this->post))
+				if(!$this->hasPost($name))
 				{
-					$this->report("для выполнения этого запроса необходимо передать: ".strtoupper($method).":".strtoupper($name)." типа: ".strtoupper($type));
+					$this->report($this->req($method,$name,$type));
 					$this->terminate();
 				}
 				else
@@ -170,7 +186,7 @@
 					}
 					else
 					{
-						$this->report(strtoupper($method).":".strtoupper($name)." не соответствует требованиям типа: ".strtoupper($type));
+						$this->report($this->mismatch($method,$name,$type));
 						$this->terminate();
 					}
 				}
