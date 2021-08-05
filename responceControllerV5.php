@@ -118,11 +118,7 @@
 			$result = NULL;
 			$args = $this->operators($args);
 			$errors = [];
-			$io = $this->get;
-			if(strtolower($method) == "post")
-			{
-				$io = $this->post;
-			}
+			$io = $this->io($method);
 			$errors = [];
 			// COMPARATORS //
 			if(array_key_exists("default",$args))
@@ -131,7 +127,7 @@
 			}
 			if(array_key_exists("required",$args))
 			{
-				if(!$this->has($method,$key))
+				if(!$this->has($method,$name))
 				{
 					array_push($errors,[
 						"field" => $name,
@@ -222,14 +218,20 @@
 		{
 			die($this->respond());
 		}
-		public function has($method,$key)
+		private function io($method)
 		{
-			$io = $this->get;
 			if(strtolower($method) == "post")
 			{
-				$io = $this->post;
+				return $this->post;
 			}
-			return array_key_exists($key,$io);
+			else
+			{
+				return $this->get;
+			}
+		}
+		public function has($method,$name)
+		{
+			return array_key_exists($name,$this->io($method));
 		}
 		public function report($error)
 		{
