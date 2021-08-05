@@ -1,12 +1,12 @@
 <?php
 	/**
-	* @description IndexCMS API Controller Main
-	*	@category    API
-	*	@package	   IndexCMS
-	*	@author	     dev1lroot@protonmail.com
-	*	@copyright   2021 David Eichendorf (C)
-	*	@license	   AGPL 3.0
-	*	@version	   4.1
+	*	@description	IndexCMS Engine API Component
+	*	@category	API
+	*	@package	IndexCMS
+	*	@author		dev1lroot@protonmail.com
+	*	@copyright	2021 David Eichendorf (C)
+	*	@license	AGPL 3.0
+	*	@version	4.2
 	*/
 	class API
 	{
@@ -90,6 +90,49 @@
 		{
 			die($this->respond());
 		}
+		// get
+		function get($name,$type)
+		{
+			return $this->val('get',$name,$type);
+		}
+		function getInt($name)
+		{
+			return $this->get($name,'int');
+		}
+		function getList($name)
+		{
+			return $this->get($name,'intlist');
+		}
+		function getString($name)
+		{
+			return $this->get($name,'string');
+		}
+		function getAddr($name)
+		{
+			return $this->get($name,'address');
+		}
+		// post
+		function post($name,$type)
+		{
+			return $this->val('post',$name,$type);
+		}
+		function postInt($name)
+		{
+			return $this->post($name,'int');
+		}
+		function getList($name)
+		{
+			return $this->post($name,'intlist');
+		}
+		function postString($name)
+		{
+			return $this->post($name,'string');
+		}
+		function postAddr($name)
+		{
+			return $this->post($name,'address');
+		}
+		// value
 		function val($method,$name,$type)
 		{
 			if($method == "get")
