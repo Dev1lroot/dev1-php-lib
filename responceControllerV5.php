@@ -15,13 +15,20 @@
 		var $status;
 		var $errors;
 		var $fields;
+		var $timing;
+
 		var $get;
 		var $post;
+
 		var $admin;
-		var $timing;
-		function __construct($action,$get,$post)
+
+		var $flow;
+		var $code;
+		function __construct($action,$get,$post,$db = null)
 		{
 			ob_start();
+			$this->db = $db;
+			$this->flow = 0;
 			$this->result = [];
 			$this->errors = [];
 			$this->action = $action;
@@ -39,9 +46,16 @@
 			else
 			{
 				$value = trim($value);
-				if(strpos($value,"'") || strpos($value,'"') || strpos($value,"`") || strpos($value,"\\"))
+				if($this->db != NULL)
 				{
-					$value = addslashes($value);
+					$value = $this->db->mysqli_real_escape_string($value);
+				}
+				else
+				{
+					if(strpos($value,"'") || strpos($value,'"') || strpos($value,"`") || strpos($value,"\\"))
+					{
+						$value = addslashes($value);
+					}
 				}
 				return $value;
 			}
@@ -102,99 +116,118 @@
 				if(strpos($cmp, ":"))
 				{
 					$param = explode(":",$cmp)[0];
-					$value = explode(":",$cmp)[1];
+					$value = substr($cmp,strlen($param) + 1,strlen($cmp) - strlen($param));
 				}
 				else
 				{
 					$param = $cmp;
-					$value = "";
+					$value = true;
 				}
 				$out = array_merge($out,[$param => $value]);
 			}
 			return $out;
 		}
+		private function errorFormat($name,$method,$args,$arg_name)
+		{
+			return [
+				"field_name" => $name,
+				"field_type" => $method,
+				"error_name" => $arg_name,
+				"error_data" => $args[$arg_name],
+				"error_code" => "0x".$this->flow."A".$this->code
+			];
+		}
+		private function errorCode($field)
+		{
+			//
+		}
+		public function upd($method,$name,$value)
+		{
+			if($method == "get")
+			{
+				$this->get[$name] = $value;
+			}
+			else
+			{
+				$this->post[$name] = $value;
+			}
+		}
 		public function val($method,$name,$args)
 		{
+			$this->flow++;
+			$this->code = 0;
 			$result = NULL;
 			$args = $this->operators($args);
 			$errors = [];
 			$io = $this->io($method);
-			$errors = [];
+
 			// COMPARATORS //
 			if(array_key_exists("default",$args))
 			{
 				$result = $args["default"];
 			}
+			if(array_key_exists("strict",$args))
+			{
+				
+			}
 			if(array_key_exists("required",$args))
 			{
 				if(!$this->has($method,$name))
 				{
-					array_push($errors,[
-						"field" => $name,
-						"method" => $method,
-						"compare" => "required",
-						"defined" => true
-					]);
+					$this->code++;
+					$errors[] = $this->errorFormat($name,$method,$args,"required");
+				}
+			}
+			if(!array_key_exists("raw",$args))
+			{
+				$this->upd($method,$name,htmlspecialchars($io[$name]));
+			}
+			if(array_key_exists("re",$args))
+			{
+				if(!preg_match($args["re"], $io[$name]))
+				{
+					$this->code++;
+					$errors[] = $this->errorFormat($name,$method,$args,"re");
 				}
 			}
 			if(array_key_exists("type",$args))
 			{
-				if(!$this->cmp($this->get[$name],$args["type"]))
+				if(!$this->cmp($io[$name],$args["type"]))
 				{
-					array_push($errors,[
-						"field" => $name,
-						"method" => $method,
-						"compare" => "type",
-						"defined" => $args["type"]
-					]);
+					$this->code++;
+					$errors[] = $this->errorFormat($name,$method,$args,"type");
 				}
 			}
 			if(array_key_exists("minlen",$args))
 			{
 				if($args["minlen"] > strlen($io[$name]))
 				{
-					array_push($errors,[
-						"field" => $name,
-						"method" => $method,
-						"compare" => "minlen",
-						"defined" => $args["minlen"]
-					]);
+					$this->code++;
+					$errors[] = $this->errorFormat($name,$method,$args,"minlen");
 				}
 			}
 			if(array_key_exists("maxlen",$args))
 			{
 				if(strlen($io[$name]) > $args["maxlen"])
 				{
-					array_push($errors,[
-						"field" => $name,
-						"method" => $method,
-						"compare" => "maxlen",
-						"defined" => $args["maxlen"]
-					]);
+					$this->code++;
+					$errors[] = $this->errorFormat($name,$method,$args,"maxlen");
 				}
 			}
 			if(array_key_exists("minval",$args))
 			{
 				if(intval($args["minval"]) > intval($io[$name]))
 				{
-					array_push($errors,[
-						"field" => $name,
-						"method" => $method,
-						"compare" => "minval",
-						"defined" => $args["minval"]
-					]);
+					$this->code++;
+					$errors[] = $this->errorFormat($name,$method,$args,"minval");
 				}
 			}
 			if(array_key_exists("maxval",$args))
 			{
 				if(intval($io[$name]) > intval($args["maxval"]))
 				{
-					array_push($errors,[
-						"field" => $name,
-						"method" => $method,
-						"compare" => "maxval",
-						"defined" => $args["maxval"]
-					]);
+					$this->code++;
+					$errors[] = $this->errorFormat($name,$method,$args,"maxval");
 				}
 			}
 			if(count($errors) == 0)
