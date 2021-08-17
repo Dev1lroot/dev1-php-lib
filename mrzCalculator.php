@@ -17,7 +17,7 @@ class MRZCALC
 
     function __construct($username,$type,$countrycode)
     {
-        $td1 = "P".strtoupper($type.$countrycode)."<".strtoupper($username);
+        $td1 = "P".strtoupper($type.$countrycode).strtoupper($username);
         while(44 > strlen($td1))
         {
             $td1 = $td1."<";
