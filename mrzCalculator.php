@@ -1,6 +1,6 @@
 <?php
 /**
-	*	@description	ICAO-9303 Machine Readable Travel Document, MRZ - Mashine Readable Zone - Generator
+	*	@description	ICAO-9303 Machine Readable Travel Document, MRZ - Machine Readable Zone - Generator
 	*	@category	GOVERNMENT
 	*	@package	ICAO
 	*	@author		dev1lroot@protonmail.com
